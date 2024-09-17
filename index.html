@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="">
+    <title>Tier-Maker</title>
+    <script type="module" >
+        const $ = el => document.querySelector(el);
+        const $$ = el => document.querySelectorAll(el);
+
+
+        const imageInput = $('#img-input')
+
+        const itemsSection = $('#selector-items')
+
+        const resetButton = $('#reset-tier-button')
+
+        const rows = document.querySelectorAll('.row');
+
+        function createItem (src){
+            const imgElement = document.createElement('img')
+            imgElement.draggable = true
+            imgElement.src = src
+            imgElement.className = 'item-image'
+
+
+
+            imgElement.addEventListener('dragstart', handleDragStart)
+            imgElement.addEventListener('dragend', handleDragEnd)
+            itemsSection.appendChild(imgElement)
+            return imgElement
+        }
+
+        function useFilesToCreateItems (files) {
+
+            if (files && files.length > 0){
+        console.log(files)
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader()
+
+        reader.onload = (eventReader) =>{
+            
+            createItem(eventReader.target.result)
+        }
+        reader.readAsDataURL(file)
+
+        })
+        
+    }
+        }
+
+        imageInput.addEventListener('change', (event) =>{
+            const {files} = event.target
+
+    useFilesToCreateItems (files);
+})
+
+let draggedElement = null
+let sourceContainer = null
+console.log(rows)
+
+rows.forEach(row => {
+    row.addEventListener('drop', handleDrop)
+    row.addEventListener('dragover', handleDragOver)
+    row.addEventListener('dragleave', handleDragLeave)
+
+})
+
+itemsSection.addEventListener('drop', handleDrop)
+itemsSection.addEventListener('dragover', handleDragOver)
+itemsSection.addEventListener('dragleave', handleDragLeave)
+
+itemsSection.addEventListener('drop', handleDropFromDesktop)
+itemsSection.addEventListener('dragover', handleDragOverFromDesktop)
+
+function handleDragOverFromDesktop(event){
+    event.preventDefault()
+    const { currentTarget, dataTransfer} = event
+
+    if (dataTransfer.types.includes('Files')) {
+        currentTarget.classList.add('drag-files')
+    }
+
+
+}
+
+function handleDropFromDesktop (event) {
+    event.preventDefault()
+
+    const { currentTarget, dataTransfer} = event
+
+    if (dataTransfer.types.includes('Files')){
+        currentTarget.classList.remove('drag-files')
+        const {files} = dataTransfer
+        useFilesToCreateItems(files)
+    }
+}
+
+
+
+
+function handleDrop (event){
+    event.preventDefault()  
+
+    const {currentTarget,dataTransfer} = event
+    if (sourceContainer && draggedElement ) {
+        sourceContainer.removeChild(draggedElement)
+    }
+    if (draggedElement){
+        const src = dataTransfer.getData('text/plain')
+       const imgElement = createItem (src)
+       currentTarget.appendChild(imgElement) 
+    }
+    currentTarget.classList.remove('drop-over')
+    currentTarget.querySelector('.drag-preview')?.remove()
+
+}
+function handleDragOver(event){  
+    event.preventDefault()
+
+
+    const {currentTarget, dataTransfer} = event
+
+
+    if (sourceContainer === currentTarget) return
+
+
+    currentTarget.classList.add('drop-over')
+
+    const dragPreview = document.querySelector('.drag-preview')
+
+    if (draggedElement && !dragPreview ) {
+        const previewElement = draggedElement.cloneNode (true)
+        previewElement.classList.add('drag-preview')
+        currentTarget.appendChild(previewElement)
+    }
+}
+function handleDragLeave(event){ 
+    event.preventDefault()
+    const {currentTarget} = event
+    currentTarget.classList.remove('drop-over')
+    currentTarget.querySelector('.drag-preview')?.remove()  
+}
+
+
+function handleDragStart (event){
+    
+    draggedElement = event.target
+    sourceContainer = draggedElement.parentNode
+    event.dataTransfer.setData('text/plain', draggedElement.src)
+}
+function handleDragEnd (event){
+    
+    draggedElement = null
+    sourceContainer = null
+}
+resetButton.addEventListener('click', () =>{
+        const items = $$('.row .item-image');
+        console.log('Items to reset:', items);
+
+        items.forEach(item =>{
+            item.remove()
+
+            itemsSection.appendChild(item)
+        })
+    })
+
+    </script>
+</head>
+<body>
+    <header id="top-header">
+        <img class="logo-header" src="assets/tiermaker-logo.png" alt="Logo de la pagina" >
+    </header>
+    <section class="tier-list">
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-S)">
+                <span contenteditable="true">S</span>
+            </aside>
+        </div>
+
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-A)">
+                <span contenteditable="true">A</span>
+            </aside>
+        </div>
+
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-B)">
+                <span contenteditable="true">B</span>
+            </aside>
+        </div>
+
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-C)">
+                <span contenteditable="true">C</span>
+            </aside>
+        </div>
+
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-D)">
+                <span contenteditable="true">D</span>
+            </aside>
+        </div>
+
+        <div class="row">
+            <aside class="tier" style="--level: var(--color-E)">
+                <span contenteditable="true">E</span>
+            </aside>
+        </div>
+    </section>
+
+    <footer id="selector">
+        <section id="selector-buttons">
+            <label>
+            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  
+                stroke-width="1"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-new-section">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 12l6 0" />
+                <path d="M12 9l0 6" />
+                <path d="M4 6v-1a1 1 0 0 1 1 -1h1m5 0h2m5 0h1a1 1 0 0 1 1 1v1m0 5v2m0 5v1a1 1 0 0 1 -1 1h-1m-5 0h-2m-5 0h-1a1 1 0 0 1 -1 -1v-1m0 -5v-2m0 -5" />
+            </svg>
+            <input multiple accept="image/*" id="img-input" type="file" hidden/>
+            </label>
+
+            <input id="img-input" type="file" hidden/>
+
+            <button id="reset-tier-button">
+                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                </svg>
+                </button>
+
+        </section>
+        <section id="selector-items">
+
+        </section>
+    </footer>
+    
+</body>
+</html>
